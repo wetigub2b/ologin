@@ -1,0 +1,367 @@
+:root {
+    --primary-color: #4285f4;
+    --apple-color: #000000;
+    --success-color: #34a853;
+    --danger-color: #ea4335;
+    --text-primary: #202124;
+    --text-secondary: #5f6368;
+    --background: #f8f9fa;
+    --card-background: #ffffff;
+    --border-color: #dadce0;
+    --shadow: 0 1px 3px rgba(0, 0, 0, 0.12), 0 1px 2px rgba(0, 0, 0, 0.24);
+    --shadow-hover: 0 4px 8px rgba(0, 0, 0, 0.16), 0 3px 6px rgba(0, 0, 0, 0.23);
+}
+
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    min-height: 100vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 20px;
+    color: var(--text-primary);
+}
+
+.container {
+    width: 100%;
+    max-width: 500px;
+}
+
+.login-card,
+.profile-card {
+    background: var(--card-background);
+    border-radius: 16px;
+    padding: 40px;
+    box-shadow: var(--shadow);
+    animation: slideUp 0.4s ease-out;
+}
+
+@keyframes slideUp {
+    from {
+        opacity: 0;
+        transform: translateY(20px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+h1 {
+    font-size: 2rem;
+    font-weight: 600;
+    text-align: center;
+    margin-bottom: 8px;
+    color: var(--text-primary);
+}
+
+.subtitle {
+    text-align: center;
+    color: var(--text-secondary);
+    margin-bottom: 32px;
+    font-size: 1rem;
+}
+
+.login-options {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    margin-bottom: 32px;
+}
+
+.btn {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 12px;
+    padding: 14px 24px;
+    border: 1px solid var(--border-color);
+    border-radius: 8px;
+    font-size: 1rem;
+    font-weight: 500;
+    text-decoration: none;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    font-family: inherit;
+    width: 100%;
+}
+
+.btn:hover {
+    box-shadow: var(--shadow-hover);
+    transform: translateY(-2px);
+}
+
+.btn-icon {
+    width: 20px;
+    height: 20px;
+}
+
+.btn-google {
+    background: white;
+    color: var(--text-primary);
+}
+
+.btn-google:hover {
+    background: #f8f9fa;
+}
+
+.btn-apple {
+    background: var(--apple-color);
+    color: white;
+    border-color: var(--apple-color);
+}
+
+.btn-apple:hover {
+    background: #1a1a1a;
+}
+
+.btn-primary {
+    background: var(--primary-color);
+    color: white;
+    border-color: var(--primary-color);
+}
+
+.btn-primary:hover {
+    background: #3367d6;
+}
+
+.btn-secondary {
+    background: white;
+    color: var(--text-secondary);
+}
+
+.btn-secondary:hover {
+    background: #f8f9fa;
+}
+
+.info-section {
+    margin-top: 32px;
+    padding: 24px;
+    background: #f8f9fa;
+    border-radius: 8px;
+}
+
+.info-section h2 {
+    font-size: 1.25rem;
+    margin-bottom: 12px;
+    color: var(--text-primary);
+}
+
+.info-section p {
+    color: var(--text-secondary);
+    margin-bottom: 12px;
+}
+
+.info-section ul {
+    list-style: none;
+    padding-left: 0;
+}
+
+.info-section li {
+    padding: 8px 0;
+    color: var(--text-secondary);
+}
+
+.welcome-section {
+    text-align: center;
+}
+
+.user-avatar {
+    width: 80px;
+    height: 80px;
+    margin: 0 auto 16px;
+    border-radius: 50%;
+    overflow: hidden;
+    border: 3px solid var(--primary-color);
+}
+
+.user-avatar img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+.avatar-placeholder {
+    width: 100%;
+    height: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: var(--primary-color);
+    color: white;
+    font-size: 2rem;
+    font-weight: 600;
+}
+
+.provider-badge {
+    display: inline-block;
+    padding: 6px 12px;
+    background: #e8f0fe;
+    color: var(--primary-color);
+    border-radius: 16px;
+    font-size: 0.875rem;
+    font-weight: 500;
+    margin: 8px 0 24px;
+}
+
+.provider-badge.large {
+    font-size: 1rem;
+    padding: 8px 16px;
+}
+
+.action-buttons {
+    display: flex;
+    gap: 12px;
+    margin-top: 24px;
+}
+
+.action-buttons .btn {
+    flex: 1;
+}
+
+.profile-card {
+    max-width: 600px;
+    margin: 0 auto;
+}
+
+.back-link {
+    display: inline-block;
+    color: var(--primary-color);
+    text-decoration: none;
+    margin-bottom: 16px;
+    font-weight: 500;
+}
+
+.back-link:hover {
+    text-decoration: underline;
+}
+
+.profile-content {
+    margin-top: 24px;
+}
+
+.profile-header {
+    text-align: center;
+    margin-bottom: 32px;
+    padding-bottom: 24px;
+    border-bottom: 1px solid var(--border-color);
+}
+
+.profile-avatar,
+.profile-avatar-placeholder {
+    width: 120px;
+    height: 120px;
+    margin: 0 auto 16px;
+    border-radius: 50%;
+    border: 4px solid var(--primary-color);
+}
+
+.profile-avatar {
+    object-fit: cover;
+}
+
+.profile-avatar-placeholder {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: var(--primary-color);
+    color: white;
+    font-size: 3rem;
+    font-weight: 600;
+}
+
+.profile-details {
+    margin: 24px 0;
+}
+
+.profile-details h3 {
+    font-size: 1.125rem;
+    margin-bottom: 16px;
+    color: var(--text-primary);
+}
+
+.detail-row {
+    display: flex;
+    justify-content: space-between;
+    padding: 12px 0;
+    border-bottom: 1px solid var(--border-color);
+}
+
+.detail-row:last-child {
+    border-bottom: none;
+}
+
+.detail-label {
+    font-weight: 500;
+    color: var(--text-secondary);
+}
+
+.detail-value {
+    color: var(--text-primary);
+    word-break: break-word;
+}
+
+.profile-json {
+    margin: 32px 0;
+    padding: 20px;
+    background: #f8f9fa;
+    border-radius: 8px;
+}
+
+.profile-json h3 {
+    font-size: 1.125rem;
+    margin-bottom: 12px;
+    color: var(--text-primary);
+}
+
+.profile-json pre {
+    overflow-x: auto;
+    background: #2d2d2d;
+    padding: 16px;
+    border-radius: 4px;
+}
+
+.profile-json code {
+    font-family: 'Courier New', Courier, monospace;
+    font-size: 0.875rem;
+    color: #a9b7c6;
+}
+
+footer {
+    text-align: center;
+    margin-top: 24px;
+    padding: 16px;
+    color: white;
+    font-size: 0.875rem;
+}
+
+footer p {
+    margin: 4px 0;
+}
+
+footer a {
+    color: white;
+    text-decoration: underline;
+}
+
+@media (max-width: 600px) {
+    .login-card,
+    .profile-card {
+        padding: 24px;
+    }
+
+    h1 {
+        font-size: 1.5rem;
+    }
+
+    .action-buttons {
+        flex-direction: column;
+    }
+}

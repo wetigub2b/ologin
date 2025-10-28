@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>User Profile - OAuth Login Demo</title>
+    <link rel="stylesheet" href="/css/style.css">
+</head>
+<body>
+    <div class="container">
+        <div class="profile-card">
+            <a href="/" class="back-link">← Back to Home</a>
+
+            <h1>👤 User Profile</h1>
+
+            <div class="profile-content">
+                <div class="profile-header">
+                    <% if (user.photo) { %>
+                        <img src="<%= user.photo %>" alt="Profile" class="profile-avatar">
+                    <% } else { %>
+                        <div class="profile-avatar-placeholder">
+                            <%= user.displayName ? user.displayName.charAt(0).toUpperCase() : '?' %>
+                        </div>
+                    <% } %>
+                    <h2><%= user.displayName || 'User' %></h2>
+                    <span class="provider-badge large">
+                        <%= user.provider === 'google' ? '🔵 Google' : '🍎 Apple' %>
+                    </span>
+                </div>
+
+                <div class="profile-details">
+                    <h3>Account Information</h3>
+                    <div class="detail-row">
+                        <span class="detail-label">Provider:</span>
+                        <span class="detail-value"><%= user.provider %></span>
+                    </div>
+                    <div class="detail-row">
+                        <span class="detail-label">User ID:</span>
+                        <span class="detail-value"><%= user.id %></span>
+                    </div>
+                    <% if (user.email) { %>
+                    <div class="detail-row">
+                        <span class="detail-label">Email:</span>
+                        <span class="detail-value"><%= user.email %></span>
+                    </div>
+                    <% } %>
+                    <div class="detail-row">
+                        <span class="detail-label">Display Name:</span>
+                        <span class="detail-value"><%= user.displayName || 'Not provided' %></span>
+                    </div>
+                </div>
+
+                <div class="profile-json">
+                    <h3>Raw User Data</h3>
+                    <pre><code><%= JSON.stringify(user, null, 2) %></code></pre>
+                </div>
+
+                <div class="action-buttons">
+                    <a href="/" class="btn btn-primary">Home</a>
+                    <a href="/logout" class="btn btn-secondary">Logout</a>
+                </div>
+            </div>
+        </div>
+    </div>
+</body>
+</html>

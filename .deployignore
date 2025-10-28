@@ -1,0 +1,55 @@
+# Deployment ignore file
+# Files and directories listed here will be excluded from deployment
+
+# Dependencies
+node_modules/
+
+# Git
+.git/
+.gitignore
+
+# Environment files (deploy separately)
+.env
+.env.*
+!.env.example
+
+# Apple private keys (deploy separately with proper permissions)
+*.p8
+
+# Logs
+*.log
+logs/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# Temporary files
+tmp/
+temp/
+*.tmp
+
+# Deployment script itself
+deploy.sh
+.deployignore
+
+# Test files
+test/
+tests/
+*.test.js
+*.spec.js
+__tests__/
+
+# Documentation (optional - uncomment if you don't want to deploy docs)
+# README.md
+# docs/

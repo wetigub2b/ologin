@@ -1,0 +1,7 @@
+#npm install -g pm2
+pm2 start server.js --name oauth-login
+pm2 save
+pm2 startup
+#pm2 status
+#pm2 logs auth-login
+#pm2 restart
