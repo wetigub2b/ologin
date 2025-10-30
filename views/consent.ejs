@@ -1,0 +1,196 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Authorization Request</title>
+    <link rel="stylesheet" href="/css/style.css">
+    <style>
+        .consent-container {
+            max-width: 500px;
+            margin: 50px auto;
+            padding: 30px;
+            background: white;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        .app-info {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+        .app-logo {
+            width: 80px;
+            height: 80px;
+            border-radius: 50%;
+            object-fit: cover;
+            margin-bottom: 15px;
+        }
+        .app-name {
+            font-size: 24px;
+            font-weight: bold;
+            margin: 10px 0;
+        }
+        .app-description {
+            color: #666;
+            font-size: 14px;
+        }
+        .user-info {
+            background: #f5f5f5;
+            padding: 15px;
+            border-radius: 6px;
+            margin-bottom: 25px;
+            text-align: center;
+        }
+        .user-photo {
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            margin-bottom: 10px;
+        }
+        .permissions {
+            margin: 25px 0;
+        }
+        .permissions h3 {
+            font-size: 16px;
+            margin-bottom: 15px;
+            color: #333;
+        }
+        .permission-item {
+            display: flex;
+            align-items: center;
+            padding: 10px;
+            margin-bottom: 8px;
+            background: #f9f9f9;
+            border-radius: 4px;
+        }
+        .permission-icon {
+            width: 24px;
+            height: 24px;
+            margin-right: 12px;
+            color: #4285f4;
+        }
+        .button-group {
+            display: flex;
+            gap: 10px;
+            margin-top: 25px;
+        }
+        .btn {
+            flex: 1;
+            padding: 12px 24px;
+            border: none;
+            border-radius: 4px;
+            font-size: 16px;
+            cursor: pointer;
+            transition: background-color 0.3s;
+        }
+        .btn-allow {
+            background: #4285f4;
+            color: white;
+        }
+        .btn-allow:hover {
+            background: #357ae8;
+        }
+        .btn-deny {
+            background: #f1f3f4;
+            color: #5f6368;
+        }
+        .btn-deny:hover {
+            background: #e8eaed;
+        }
+        .security-notice {
+            font-size: 12px;
+            color: #666;
+            text-align: center;
+            margin-top: 20px;
+            padding-top: 20px;
+            border-top: 1px solid #eee;
+        }
+    </style>
+</head>
+<body>
+    <div class="consent-container">
+        <div class="app-info">
+            <% if (client.logo_url) { %>
+                <img src="<%= client.logo_url %>" alt="<%= client.client_name %>" class="app-logo">
+            <% } else { %>
+                <div class="app-logo" style="background: #e8eaed; display: flex; align-items: center; justify-content: center; font-size: 32px; color: #5f6368;">
+                    <%= client.client_name.charAt(0).toUpperCase() %>
+                </div>
+            <% } %>
+            <div class="app-name"><%= client.client_name %></div>
+            <% if (client.client_description) { %>
+                <div class="app-description"><%= client.client_description %></div>
+            <% } %>
+        </div>
+
+        <div class="user-info">
+            <% if (user.photo) { %>
+                <img src="<%= user.photo %>" alt="<%= user.displayName %>" class="user-photo">
+            <% } %>
+            <div><strong><%= user.displayName %></strong></div>
+            <div style="font-size: 14px; color: #666;"><%= user.email %></div>
+        </div>
+
+        <div class="permissions">
+            <h3><%= client.client_name %> is requesting access to:</h3>
+            <% if (scope.includes('openid') || scope.includes('profile')) { %>
+            <div class="permission-item">
+                <svg class="permission-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor">
+                    <path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z"/>
+                </svg>
+                <div>
+                    <strong>Your profile information</strong>
+                    <div style="font-size: 13px; color: #666;">Name and profile picture</div>
+                </div>
+            </div>
+            <% } %>
+
+            <% if (scope.includes('email')) { %>
+            <div class="permission-item">
+                <svg class="permission-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor">
+                    <path d="M20 4H4c-1.1 0-2 .9-2 2v12c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V6c0-1.1-.9-2-2-2zm0 4l-8 5-8-5V6l8 5 8-5v2z"/>
+                </svg>
+                <div>
+                    <strong>Your email address</strong>
+                    <div style="font-size: 13px; color: #666;"><%= user.email %></div>
+                </div>
+            </div>
+            <% } %>
+        </div>
+
+        <form method="POST" action="/oauth/authorize">
+            <input type="hidden" name="client_id" value="<%= authParams.client_id %>">
+            <input type="hidden" name="redirect_uri" value="<%= authParams.redirect_uri %>">
+            <input type="hidden" name="response_type" value="<%= authParams.response_type %>">
+            <input type="hidden" name="scope" value="<%= authParams.scope %>">
+            <% if (authParams.state) { %>
+            <input type="hidden" name="state" value="<%= authParams.state %>">
+            <% } %>
+            <% if (authParams.code_challenge) { %>
+            <input type="hidden" name="code_challenge" value="<%= authParams.code_challenge %>">
+            <input type="hidden" name="code_challenge_method" value="<%= authParams.code_challenge_method %>">
+            <% } %>
+
+            <div class="button-group">
+                <button type="submit" name="action" value="deny" class="btn btn-deny">
+                    Cancel
+                </button>
+                <button type="submit" name="action" value="allow" class="btn btn-allow">
+                    Allow
+                </button>
+            </div>
+        </form>
+
+        <div class="security-notice">
+            <p>By allowing access, you authorize this application to use your information in accordance with their privacy policy and terms of service.</p>
+            <% if (client.privacy_policy_url) { %>
+                <a href="<%= client.privacy_policy_url %>" target="_blank">Privacy Policy</a>
+            <% } %>
+            <% if (client.terms_of_service_url) { %>
+                <% if (client.privacy_policy_url) { %> · <% } %>
+                <a href="<%= client.terms_of_service_url %>" target="_blank">Terms of Service</a>
+            <% } %>
+        </div>
+    </div>
+</body>
+</html>

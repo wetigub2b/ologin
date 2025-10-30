@@ -1,0 +1,294 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin Dashboard - OAuth Gateway</title>
+    <link rel="stylesheet" href="/css/style.css">
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+            background: #f5f7fa;
+        }
+        .header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 20px 40px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .header h1 {
+            font-size: 24px;
+            font-weight: 600;
+        }
+        .header-actions a {
+            color: white;
+            text-decoration: none;
+            margin-left: 20px;
+            font-size: 14px;
+        }
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 40px 20px;
+        }
+        .stats {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 20px;
+            margin-bottom: 40px;
+        }
+        .stat-card {
+            background: white;
+            padding: 24px;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        .stat-label {
+            color: #666;
+            font-size: 14px;
+            margin-bottom: 8px;
+        }
+        .stat-value {
+            font-size: 32px;
+            font-weight: 700;
+            color: #333;
+        }
+        .section-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+        .section-header h2 {
+            font-size: 20px;
+            color: #333;
+        }
+        .btn {
+            padding: 10px 20px;
+            background: #667eea;
+            color: white;
+            text-decoration: none;
+            border-radius: 6px;
+            font-size: 14px;
+            font-weight: 600;
+            display: inline-block;
+            transition: background 0.3s;
+        }
+        .btn:hover {
+            background: #5568d3;
+        }
+        .clients-table {
+            background: white;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            overflow: hidden;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+        th {
+            background: #f8f9fa;
+            padding: 16px;
+            text-align: left;
+            font-weight: 600;
+            color: #333;
+            font-size: 14px;
+            border-bottom: 2px solid #e1e4e8;
+        }
+        td {
+            padding: 16px;
+            border-bottom: 1px solid #e1e4e8;
+            font-size: 14px;
+            color: #555;
+        }
+        tr:last-child td {
+            border-bottom: none;
+        }
+        tr:hover {
+            background: #f8f9fa;
+        }
+        .badge {
+            display: inline-block;
+            padding: 4px 8px;
+            border-radius: 4px;
+            font-size: 12px;
+            font-weight: 600;
+        }
+        .badge-active {
+            background: #d4edda;
+            color: #155724;
+        }
+        .badge-inactive {
+            background: #f8d7da;
+            color: #721c24;
+        }
+        .client-id {
+            font-family: monospace;
+            font-size: 12px;
+            color: #666;
+        }
+        .actions {
+            display: flex;
+            gap: 10px;
+        }
+        .btn-delete {
+            padding: 6px 12px;
+            background: #dc3545;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 12px;
+        }
+        .btn-delete:hover {
+            background: #c82333;
+        }
+        .btn-regenerate {
+            padding: 6px 12px;
+            background: #ffc107;
+            color: #333;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 12px;
+            font-weight: 600;
+        }
+        .btn-regenerate:hover {
+            background: #e0a800;
+        }
+        .empty-state {
+            text-align: center;
+            padding: 60px 20px;
+            color: #666;
+        }
+        .empty-state h3 {
+            margin-bottom: 10px;
+            color: #333;
+        }
+        .alert {
+            padding: 12px 16px;
+            border-radius: 6px;
+            margin-bottom: 20px;
+        }
+        .alert-success {
+            background: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+        }
+        .redirect-uris {
+            font-size: 12px;
+            color: #666;
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <h1>🔐 OAuth Gateway Admin</h1>
+        <div class="header-actions">
+            <a href="/">← Back to Site</a>
+            <a href="/admin/logout">Logout</a>
+        </div>
+    </div>
+
+    <div class="container">
+        <% if (typeof deleted !== 'undefined' && deleted) { %>
+        <div class="alert alert-success">
+            ✓ Client deleted successfully
+        </div>
+        <% } %>
+
+        <div class="stats">
+            <div class="stat-card">
+                <div class="stat-label">Total Clients</div>
+                <div class="stat-value"><%= stats.totalClients %></div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-label">Active Clients</div>
+                <div class="stat-value"><%= stats.activeClients %></div>
+            </div>
+        </div>
+
+        <div class="section-header">
+            <h2>OAuth Clients</h2>
+            <a href="/admin/clients/new" class="btn">+ New Client</a>
+        </div>
+
+        <div class="alert" style="background: #d1ecf1; border: 1px solid #bee5eb; color: #0c5460; margin-bottom: 20px;">
+            <strong>ℹ️ About Client Secrets</strong>
+            <p>Client secrets are only shown once when you create or regenerate them. If you lost your secret, use the "🔄 New Secret" button to generate a new one (this will revoke all existing tokens).</p>
+        </div>
+
+        <div class="clients-table">
+            <% if (clients.length === 0) { %>
+            <div class="empty-state">
+                <h3>No clients yet</h3>
+                <p>Create your first OAuth client to get started</p>
+            </div>
+            <% } else { %>
+            <table>
+                <thead>
+                    <tr>
+                        <th>Name</th>
+                        <th>Client ID</th>
+                        <th>Redirect URIs</th>
+                        <th>Status</th>
+                        <th>Created</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <% clients.forEach(client => { %>
+                    <tr>
+                        <td>
+                            <strong><%= client.client_name %></strong>
+                            <% if (client.client_description) { %>
+                            <br><small style="color: #888;"><%= client.client_description %></small>
+                            <% } %>
+                        </td>
+                        <td>
+                            <code class="client-id"><%= client.client_id %></code>
+                        </td>
+                        <td>
+                            <div class="redirect-uris">
+                                <% if (Array.isArray(client.redirect_uris)) { %>
+                                    <% client.redirect_uris.forEach((uri, i) => { %>
+                                        <%= uri %><% if (i < client.redirect_uris.length - 1) { %><br><% } %>
+                                    <% }) %>
+                                <% } else { %>
+                                    <%= client.redirect_uris %>
+                                <% } %>
+                            </div>
+                        </td>
+                        <td>
+                            <span class="badge <%= client.active ? 'badge-active' : 'badge-inactive' %>">
+                                <%= client.active ? 'Active' : 'Inactive' %>
+                            </span>
+                        </td>
+                        <td><%= new Date(client.created_at).toLocaleDateString() %></td>
+                        <td>
+                            <div class="actions">
+                                <form method="POST" action="/admin/clients/<%= client.client_id %>/regenerate-secret" style="display: inline;">
+                                    <button type="submit" class="btn-regenerate" onclick="return confirm('This will generate a new secret and revoke all existing tokens. Continue?')">
+                                        🔄 New Secret
+                                    </button>
+                                </form>
+                                <form method="POST" action="/admin/clients/<%= client.client_id %>/delete" style="display: inline;">
+                                    <button type="submit" class="btn-delete" onclick="return confirm('Are you sure you want to delete this client?')">
+                                        Delete
+                                    </button>
+                                </form>
+                            </div>
+                        </td>
+                    </tr>
+                    <% }); %>
+                </tbody>
+            </table>
+            <% } %>
+        </div>
+    </div>
+</body>
+</html>

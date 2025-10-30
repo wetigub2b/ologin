@@ -1,0 +1,194 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Client Created - Admin</title>
+    <link rel="stylesheet" href="/css/style.css">
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+            background: #f5f7fa;
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        .success-container {
+            background: white;
+            padding: 40px;
+            border-radius: 8px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+            max-width: 600px;
+            width: 100%;
+        }
+        .success-header {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+        .success-icon {
+            font-size: 64px;
+            margin-bottom: 16px;
+        }
+        .success-header h1 {
+            color: #28a745;
+            margin-bottom: 8px;
+        }
+        .credentials {
+            background: #f8f9fa;
+            border: 2px solid #28a745;
+            border-radius: 8px;
+            padding: 24px;
+            margin: 24px 0;
+        }
+        .credential-item {
+            margin-bottom: 20px;
+        }
+        .credential-item:last-child {
+            margin-bottom: 0;
+        }
+        .credential-label {
+            font-size: 12px;
+            color: #666;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            margin-bottom: 8px;
+            font-weight: 600;
+        }
+        .credential-value {
+            font-family: 'Courier New', monospace;
+            font-size: 14px;
+            background: white;
+            padding: 12px;
+            border-radius: 4px;
+            border: 1px solid #ddd;
+            word-break: break-all;
+            position: relative;
+        }
+        .copy-btn {
+            position: absolute;
+            right: 8px;
+            top: 8px;
+            padding: 4px 8px;
+            background: #667eea;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 11px;
+        }
+        .copy-btn:hover {
+            background: #5568d3;
+        }
+        .warning {
+            background: #fff3cd;
+            border: 1px solid #ffc107;
+            color: #856404;
+            padding: 16px;
+            border-radius: 6px;
+            margin: 20px 0;
+        }
+        .warning strong {
+            display: block;
+            margin-bottom: 8px;
+        }
+        .btn-continue {
+            display: block;
+            width: 100%;
+            padding: 14px;
+            background: #667eea;
+            color: white;
+            text-align: center;
+            text-decoration: none;
+            border-radius: 6px;
+            font-weight: 600;
+            margin-top: 24px;
+        }
+        .btn-continue:hover {
+            background: #5568d3;
+        }
+    </style>
+</head>
+<body>
+    <div class="success-container">
+        <div class="success-header">
+            <div class="success-icon">✅</div>
+            <h1>Client Created Successfully!</h1>
+            <p style="color: #666;">Save these credentials now - the secret will not be shown again</p>
+        </div>
+
+        <div class="credentials">
+            <div class="credential-item">
+                <div class="credential-label">Client Name</div>
+                <div class="credential-value">
+                    <%= client.clientName %>
+                </div>
+            </div>
+
+            <div class="credential-item">
+                <div class="credential-label">Client ID</div>
+                <div class="credential-value">
+                    <%= client.clientId %>
+                    <button class="copy-btn" onclick="copyToClipboard('<%= client.clientId %>')">Copy</button>
+                </div>
+            </div>
+
+            <div class="credential-item">
+                <div class="credential-label">Client Secret</div>
+                <div class="credential-value" style="border-color: #ffc107;">
+                    <%= client.clientSecret %>
+                    <button class="copy-btn" onclick="copyToClipboard('<%= client.clientSecret %>')">Copy</button>
+                </div>
+            </div>
+        </div>
+
+        <div class="warning">
+            <strong>⚠️ Important Security Notice</strong>
+            <p>The client secret will only be shown this one time. Store it securely in your application's environment variables or secrets manager. If you lose it, you'll need to create a new client.</p>
+        </div>
+
+        <div style="display: flex; gap: 10px; margin-top: 24px;">
+            <button onclick="downloadCredentials()" class="btn-continue" style="background: #28a745; flex: 1;">
+                📥 Download Credentials
+            </button>
+            <a href="/admin" class="btn-continue" style="flex: 1;">Return to Dashboard</a>
+        </div>
+    </div>
+
+    <script>
+        function copyToClipboard(text) {
+            navigator.clipboard.writeText(text).then(() => {
+                alert('Copied to clipboard!');
+            });
+        }
+
+        function downloadCredentials() {
+            const content = `OAuth Client Credentials
+===========================
+
+Client Name: <%= client.clientName %>
+Client ID: <%= client.clientId %>
+Client Secret: <%= client.clientSecret %>
+
+⚠️ SECURITY NOTICE:
+- Keep these credentials secure and never commit them to version control
+- Store them in environment variables or a secrets manager
+- The client secret will not be shown again after leaving this page
+
+Generated: ${new Date().toLocaleString()}
+`;
+
+            const blob = new Blob([content], { type: 'text/plain' });
+            const url = window.URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = 'oauth-credentials-<%= client.clientId %>.txt';
+            document.body.appendChild(a);
+            a.click();
+            window.URL.revokeObjectURL(url);
+            document.body.removeChild(a);
+        }
+    </script>
+</body>
+</html>

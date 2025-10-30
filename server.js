@@ -7,6 +7,15 @@ const AppleStrategy = require('passport-apple').Strategy;
 const path = require('path');
 const fs = require('fs');
 
+// Import database and models
+const db = require('./db/database');
+const models = require('./db/models');
+
+// Import routes
+const oauthRoutes = require('./routes/oauth');
+const apiRoutes = require('./routes/api');
+const adminRoutes = require('./routes/admin');
+
 const app = express();
 const PORT = process.env.PORT || 3000;
 
@@ -29,13 +38,19 @@ app.use(session({
 app.use(passport.initialize());
 app.use(passport.session());
 
-// Serialize user
+// Serialize user - store user ID in session
 passport.serializeUser((user, done) => {
-  done(null, user);
+  done(null, user.id);
 });
 
-passport.deserializeUser((user, done) => {
-  done(null, user);
+// Deserialize user - retrieve user from database
+passport.deserializeUser(async (id, done) => {
+  try {
+    const user = await models.getUserById(id);
+    done(null, user);
+  } catch (error) {
+    done(error, null);
+  }
 });
 
 // Google OAuth Strategy
@@ -45,15 +60,20 @@ if (process.env.GOOGLE_CLIENT_ID && process.env.GOOGLE_CLIENT_SECRET) {
     clientSecret: process.env.GOOGLE_CLIENT_SECRET,
     callbackURL: process.env.GOOGLE_CALLBACK_URL || '/auth/google/callback'
   },
-  (accessToken, refreshToken, profile, done) => {
-    const user = {
-      provider: 'google',
-      id: profile.id,
-      displayName: profile.displayName,
-      email: profile.emails?.[0]?.value,
-      photo: profile.photos?.[0]?.value
-    };
-    return done(null, user);
+  async (accessToken, refreshToken, profile, done) => {
+    try {
+      const userData = {
+        id: profile.id,
+        displayName: profile.displayName,
+        email: profile.emails?.[0]?.value,
+        photo: profile.photos?.[0]?.value
+      };
+
+      const user = await models.findOrCreateUser('google', userData);
+      return done(null, user);
+    } catch (error) {
+      return done(error, null);
+    }
   }));
 }
 
@@ -74,14 +94,60 @@ if (process.env.APPLE_CLIENT_ID && process.env.APPLE_TEAM_ID && process.env.APPL
         callbackURL: process.env.APPLE_CALLBACK_URL || '/auth/apple/callback',
         passReqToCallback: false
       },
-      (accessToken, refreshToken, idToken, profile, done) => {
-        const user = {
-          provider: 'apple',
-          id: profile.sub || profile.id,
-          email: profile.email,
-          displayName: profile.name ? `${profile.name.firstName || ''} ${profile.name.lastName || ''}`.trim() : 'Apple User'
-        };
-        return done(null, user);
+      async (accessToken, refreshToken, idToken, profile, done) => {
+        try {
+          console.log('Apple idToken received:', idToken ? 'present' : 'missing');
+          console.log('Apple profile received:', JSON.stringify(profile, null, 2));
+
+          // Apple's user ID is in the idToken.sub field
+          // The idToken is a JWT, decode it to get the subject (user ID)
+          let userId = null;
+
+          if (idToken) {
+            try {
+              // Decode JWT without verification (Apple already verified it)
+              const base64Payload = idToken.split('.')[1];
+              const payload = JSON.parse(Buffer.from(base64Payload, 'base64').toString());
+              userId = payload.sub;
+              console.log('Decoded Apple ID token:', payload);
+            } catch (decodeError) {
+              console.error('Failed to decode Apple ID token:', decodeError);
+            }
+          }
+
+          // Fallback to profile fields
+          userId = userId || profile.sub || profile.id || profile.user;
+
+          if (!userId) {
+            console.error('No user ID found in Apple response');
+            return done(new Error('Apple did not provide user ID'), null);
+          }
+
+          // Apple may not provide email on subsequent logins
+          const email = profile.email || null;
+
+          // Construct display name from Apple profile
+          let displayName = 'Apple User';
+          if (profile.name) {
+            const firstName = profile.name.firstName || '';
+            const lastName = profile.name.lastName || '';
+            displayName = `${firstName} ${lastName}`.trim() || 'Apple User';
+          }
+
+          const userData = {
+            id: userId,
+            email: email,
+            displayName: displayName,
+            photo: null
+          };
+
+          console.log('Apple login userData:', userData);
+          const user = await models.findOrCreateUser('apple', userData);
+          return done(null, user);
+        } catch (error) {
+          console.error('Apple login error:', error);
+          return done(error, null);
+        }
       }));
     }
   } catch (error) {
@@ -95,6 +161,11 @@ app.set('views', path.join(__dirname, 'views'));
 
 // Serve static files
 app.use(express.static('public'));
+
+// Mount OAuth and API routes
+app.use('/oauth', oauthRoutes);
+app.use('/api', apiRoutes);
+app.use('/admin', adminRoutes);
 
 // Routes
 app.get('/', (req, res) => {
@@ -116,7 +187,13 @@ app.get('/auth/google',
 app.get('/auth/google/callback',
   passport.authenticate('google', { failureRedirect: '/' }),
   (req, res) => {
-    res.redirect('/profile');
+    // Redirect to OAuth flow if there's a returnTo URL
+    const returnTo = req.session.returnTo || '/profile';
+    console.log('✅ Google login successful');
+    console.log('   Session returnTo:', req.session.returnTo || 'not set');
+    console.log('   Redirecting to:', returnTo);
+    delete req.session.returnTo;
+    res.redirect(returnTo);
   }
 );
 
@@ -128,7 +205,10 @@ app.post('/auth/apple',
 app.post('/auth/apple/callback',
   passport.authenticate('apple', { failureRedirect: '/' }),
   (req, res) => {
-    res.redirect('/profile');
+    // Redirect to OAuth flow if there's a returnTo URL
+    const returnTo = req.session.returnTo || '/profile';
+    delete req.session.returnTo;
+    res.redirect(returnTo);
   }
 );
 
@@ -156,8 +236,52 @@ app.get('/health', (req, res) => {
   });
 });
 
-app.listen(PORT, () => {
-  console.log(`Server running on http://localhost:${PORT}`);
-  console.log(`Google OAuth: ${process.env.GOOGLE_CLIENT_ID ? '✓' : '✗'} configured`);
-  console.log(`Apple Sign In: ${process.env.APPLE_CLIENT_ID ? '✓' : '✗'} configured`);
-});
+// Initialize database and start server
+async function startServer() {
+  try {
+    // Test database connection
+    await db.testConnection();
+
+    // Initialize database schema
+    await db.initializeDatabase();
+
+    // Schedule token cleanup
+    db.scheduleTokenCleanup();
+
+    // Start server
+    app.listen(PORT, () => {
+      console.log(`\n✓ OAuth Gateway Server running on http://localhost:${PORT}`);
+      console.log(`\n=== OAuth Providers ===`);
+      console.log(`Google OAuth: ${process.env.GOOGLE_CLIENT_ID ? '✓' : '✗'} configured`);
+      console.log(`Apple Sign In: ${process.env.APPLE_CLIENT_ID ? '✓' : '✗'} configured`);
+      console.log(`\n=== OAuth Endpoints ===`);
+      console.log(`Authorization: http://localhost:${PORT}/oauth/authorize`);
+      console.log(`Token:         http://localhost:${PORT}/oauth/token`);
+      console.log(`Revoke:        http://localhost:${PORT}/oauth/revoke`);
+      console.log(`Introspect:    http://localhost:${PORT}/oauth/introspect`);
+      console.log(`UserInfo:      http://localhost:${PORT}/api/userinfo`);
+      console.log(`\n=== Admin API ===`);
+      console.log(`Client Mgmt:   http://localhost:${PORT}/api/admin/clients`);
+      console.log(`Admin Key:     ${process.env.ADMIN_API_KEY ? '✓ Set' : '✗ Not set (required)'}`);
+    });
+
+    // Graceful shutdown
+    process.on('SIGTERM', async () => {
+      console.log('\nSIGTERM signal received: closing HTTP server');
+      await db.closeDatabase();
+      process.exit(0);
+    });
+
+    process.on('SIGINT', async () => {
+      console.log('\nSIGINT signal received: closing HTTP server');
+      await db.closeDatabase();
+      process.exit(0);
+    });
+
+  } catch (error) {
+    console.error('Failed to start server:', error);
+    process.exit(1);
+  }
+}
+
+startServer();

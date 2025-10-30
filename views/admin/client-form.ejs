@@ -1,0 +1,187 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Create OAuth Client - Admin</title>
+    <link rel="stylesheet" href="/css/style.css">
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+            background: #f5f7fa;
+        }
+        .header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 20px 40px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .header h1 { font-size: 24px; font-weight: 600; }
+        .header a { color: white; text-decoration: none; }
+        .container {
+            max-width: 800px;
+            margin: 40px auto;
+            padding: 0 20px;
+        }
+        .form-card {
+            background: white;
+            padding: 40px;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        .form-card h2 {
+            margin-bottom: 30px;
+            color: #333;
+        }
+        .form-group {
+            margin-bottom: 24px;
+        }
+        label {
+            display: block;
+            margin-bottom: 8px;
+            color: #333;
+            font-weight: 500;
+            font-size: 14px;
+        }
+        .help-text {
+            font-size: 13px;
+            color: #666;
+            margin-top: 4px;
+        }
+        input[type="text"],
+        input[type="url"],
+        textarea {
+            width: 100%;
+            padding: 12px;
+            border: 2px solid #e1e4e8;
+            border-radius: 6px;
+            font-size: 14px;
+            font-family: inherit;
+            transition: border-color 0.3s;
+        }
+        input:focus, textarea:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+        textarea {
+            min-height: 100px;
+            resize: vertical;
+        }
+        .form-actions {
+            display: flex;
+            gap: 12px;
+            margin-top: 30px;
+        }
+        .btn {
+            padding: 12px 24px;
+            border-radius: 6px;
+            font-size: 14px;
+            font-weight: 600;
+            cursor: pointer;
+            text-decoration: none;
+            display: inline-block;
+            border: none;
+        }
+        .btn-primary {
+            background: #667eea;
+            color: white;
+        }
+        .btn-primary:hover {
+            background: #5568d3;
+        }
+        .btn-secondary {
+            background: #e1e4e8;
+            color: #333;
+        }
+        .btn-secondary:hover {
+            background: #d1d5da;
+        }
+        .error {
+            background: #fee;
+            color: #c33;
+            padding: 12px;
+            border-radius: 6px;
+            margin-bottom: 20px;
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <h1>Create New OAuth Client</h1>
+        <a href="/admin">← Back to Dashboard</a>
+    </div>
+
+    <div class="container">
+        <div class="form-card">
+            <h2>Client Information</h2>
+
+            <% if (error) { %>
+            <div class="error">❌ <%= error %></div>
+            <% } %>
+
+            <form method="POST" action="/admin/clients">
+                <div class="form-group">
+                    <label for="name">Client Name *</label>
+                    <input
+                        type="text"
+                        id="name"
+                        name="name"
+                        placeholder="My Application"
+                        required
+                    >
+                    <div class="help-text">The name of your application</div>
+                </div>
+
+                <div class="form-group">
+                    <label for="description">Description</label>
+                    <textarea
+                        id="description"
+                        name="description"
+                        placeholder="A brief description of your application"
+                    ></textarea>
+                </div>
+
+                <div class="form-group">
+                    <label for="redirectUris">Redirect URIs *</label>
+                    <textarea
+                        id="redirectUris"
+                        name="redirectUris"
+                        placeholder="http://localhost:4000/callback&#10;https://myapp.com/auth/callback"
+                        required
+                    ></textarea>
+                    <div class="help-text">One URI per line. These must match exactly when redirecting.</div>
+                </div>
+
+                <div class="form-group">
+                    <label for="logoUrl">Logo URL</label>
+                    <input
+                        type="url"
+                        id="logoUrl"
+                        name="logoUrl"
+                        placeholder="https://myapp.com/logo.png"
+                    >
+                    <div class="help-text">Optional. Will be shown on consent screen.</div>
+                </div>
+
+                <div class="form-group">
+                    <label for="websiteUrl">Website URL</label>
+                    <input
+                        type="url"
+                        id="websiteUrl"
+                        name="websiteUrl"
+                        placeholder="https://myapp.com"
+                    >
+                </div>
+
+                <div class="form-actions">
+                    <button type="submit" class="btn btn-primary">Create Client</button>
+                    <a href="/admin" class="btn btn-secondary">Cancel</a>
+                </div>
+            </form>
+        </div>
+    </div>
+</body>
+</html>

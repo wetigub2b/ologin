@@ -1,0 +1,306 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dashboard - Sample Client</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+            background: #f5f7fa;
+        }
+        .header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 20px 40px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .header h1 { font-size: 24px; }
+        .header-actions a {
+            color: white;
+            text-decoration: none;
+            margin-left: 20px;
+        }
+        .container {
+            max-width: 1000px;
+            margin: 40px auto;
+            padding: 0 20px;
+        }
+        .card {
+            background: white;
+            border-radius: 8px;
+            padding: 30px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            margin-bottom: 20px;
+        }
+        .card h2 {
+            margin-bottom: 20px;
+            color: #333;
+        }
+        .user-profile {
+            display: flex;
+            align-items: center;
+            gap: 20px;
+        }
+        .user-avatar {
+            width: 80px;
+            height: 80px;
+            border-radius: 50%;
+        }
+        .user-info h3 {
+            font-size: 24px;
+            margin-bottom: 4px;
+            color: #333;
+        }
+        .user-info p {
+            color: #666;
+            font-size: 14px;
+        }
+        .data-table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+        .data-table td {
+            padding: 12px 0;
+            border-bottom: 1px solid #e1e4e8;
+        }
+        .data-table td:first-child {
+            font-weight: 600;
+            color: #666;
+            width: 200px;
+        }
+        .data-table td:last-child {
+            color: #333;
+            word-break: break-all;
+        }
+        .data-table tr:last-child td {
+            border-bottom: none;
+        }
+        .token-display {
+            background: #f8f9fa;
+            padding: 12px;
+            border-radius: 4px;
+            font-family: monospace;
+            font-size: 12px;
+            word-break: break-all;
+            margin-top: 4px;
+        }
+        .btn {
+            display: inline-block;
+            padding: 10px 20px;
+            border-radius: 6px;
+            text-decoration: none;
+            font-weight: 600;
+            cursor: pointer;
+            border: none;
+            font-size: 14px;
+        }
+        .btn-primary {
+            background: #667eea;
+            color: white;
+        }
+        .btn-primary:hover {
+            background: #5568d3;
+        }
+        .btn-danger {
+            background: #dc3545;
+            color: white;
+        }
+        .btn-danger:hover {
+            background: #c82333;
+        }
+        .actions {
+            display: flex;
+            gap: 10px;
+            margin-top: 20px;
+        }
+        .badge {
+            display: inline-block;
+            padding: 4px 8px;
+            border-radius: 4px;
+            font-size: 12px;
+            font-weight: 600;
+        }
+        .badge-success {
+            background: #d4edda;
+            color: #155724;
+        }
+        .badge-warning {
+            background: #fff3cd;
+            color: #856404;
+        }
+        .badge-danger {
+            background: #f8d7da;
+            color: #721c24;
+        }
+        .alert {
+            padding: 12px 16px;
+            border-radius: 6px;
+            margin-bottom: 20px;
+            font-size: 14px;
+        }
+        .alert-success {
+            background: #d4edda;
+            color: #155724;
+        }
+        #refreshMessage {
+            display: none;
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <h1>🎉 Authenticated!</h1>
+        <div class="header-actions">
+            <a href="/">← Home</a>
+            <a href="/logout">Logout</a>
+        </div>
+    </div>
+
+    <div class="container">
+        <div id="refreshMessage" class="alert alert-success">
+            ✓ Token refreshed successfully!
+        </div>
+
+        <div class="card">
+            <h2>User Profile</h2>
+            <div class="user-profile">
+                <% if (user.picture) { %>
+                <img src="<%= user.picture %>" alt="<%= user.name %>" class="user-avatar">
+                <% } %>
+                <div class="user-info">
+                    <h3><%= user.name || 'User' %></h3>
+                    <p><%= user.email %></p>
+                    <p style="margin-top: 4px;">
+                        <span class="badge badge-success">
+                            Provider: <%= user.provider || 'OAuth Gateway' %>
+                        </span>
+                    </p>
+                </div>
+            </div>
+        </div>
+
+        <div class="card">
+            <h2>User Data (from /api/userinfo)</h2>
+            <table class="data-table">
+                <tr>
+                    <td>User ID (sub)</td>
+                    <td><code><%= user.sub %></code></td>
+                </tr>
+                <tr>
+                    <td>Email</td>
+                    <td><%= user.email %></td>
+                </tr>
+                <tr>
+                    <td>Name</td>
+                    <td><%= user.name || 'N/A' %></td>
+                </tr>
+                <% if (user.picture) { %>
+                <tr>
+                    <td>Picture</td>
+                    <td><%= user.picture %></td>
+                </tr>
+                <% } %>
+                <tr>
+                    <td>Email Verified</td>
+                    <td>
+                        <span class="badge <%= user.email_verified ? 'badge-success' : 'badge-warning' %>">
+                            <%= user.email_verified ? '✓ Verified' : '⚠️ Not Verified' %>
+                        </span>
+                    </td>
+                </tr>
+                <tr>
+                    <td>Provider</td>
+                    <td><%= user.provider || 'N/A' %></td>
+                </tr>
+            </table>
+        </div>
+
+        <div class="card">
+            <h2>OAuth Tokens</h2>
+            <table class="data-table">
+                <tr>
+                    <td>Access Token</td>
+                    <td>
+                        <code><%= accessToken.substring(0, 40) %>...</code>
+                        <div class="token-display"><%= accessToken %></div>
+                    </td>
+                </tr>
+                <tr>
+                    <td>Token Status</td>
+                    <td>
+                        <%
+                        const isExpired = Date.now() > tokenExpiry;
+                        const timeLeft = Math.floor((tokenExpiry - Date.now()) / 1000 / 60);
+                        %>
+                        <span class="badge <%= isExpired ? 'badge-danger' : 'badge-success' %>">
+                            <%= isExpired ? '❌ Expired' : `✓ Valid (${timeLeft} min left)` %>
+                        </span>
+                    </td>
+                </tr>
+                <tr>
+                    <td>Expires At</td>
+                    <td><%= new Date(tokenExpiry).toLocaleString() %></td>
+                </tr>
+            </table>
+
+            <div class="actions">
+                <button onclick="refreshToken()" class="btn btn-primary">
+                    🔄 Refresh Token
+                </button>
+                <a href="/logout" class="btn btn-danger">
+                    🚪 Logout & Revoke Token
+                </a>
+            </div>
+        </div>
+
+        <div class="card">
+            <h2>✅ OAuth Flow Completed Successfully!</h2>
+            <p style="color: #666; line-height: 1.6;">
+                This demonstrates a complete OAuth 2.0 + PKCE flow:
+            </p>
+            <ol style="color: #666; line-height: 2; margin-top: 10px; padding-left: 20px;">
+                <li>✓ User clicked "Login"</li>
+                <li>✓ Redirected to OAuth Gateway with PKCE challenge</li>
+                <li>✓ User authenticated with Google/Apple</li>
+                <li>✓ User approved access</li>
+                <li>✓ Received authorization code</li>
+                <li>✓ Exchanged code for access token (with PKCE verification)</li>
+                <li>✓ Retrieved user info from /api/userinfo</li>
+                <li>✓ User is now authenticated! 🎉</li>
+            </ol>
+        </div>
+    </div>
+
+    <script>
+        async function refreshToken() {
+            try {
+                const response = await fetch('/refresh', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    }
+                });
+
+                if (response.ok) {
+                    const msg = document.getElementById('refreshMessage');
+                    msg.style.display = 'block';
+                    setTimeout(() => {
+                        msg.style.display = 'none';
+                        location.reload();
+                    }, 2000);
+                } else {
+                    alert('Token refresh failed. Please login again.');
+                    window.location = '/logout';
+                }
+            } catch (error) {
+                console.error('Refresh error:', error);
+                alert('Token refresh failed. Please login again.');
+            }
+        }
+    </script>
+</body>
+</html>
